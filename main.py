@@ -9,10 +9,12 @@ import seaborn as sb
 from matplotlib.lines import Line2D
 
 colors = ['#99ff99', '#ffcc99']
+convert = 1
 
 #######################################################
 #                      IMPORT DATA                    #
 #######################################################
+# before we start lets import the data we are going to work with
 
 df = pd.read_csv(r"data/cardio_train.csv", sep=';')
 
@@ -20,17 +22,24 @@ df = pd.read_csv(r"data/cardio_train.csv", sep=';')
 #                     EXPLORE DATA                    #
 #######################################################
 
+# now we want to explore the data
+# we want to get to know it
+
 print("Before Data Cleaning:   ")
+
+# 1.
 print(df.head())
+# here we see that age is a bigger integer => age is in days which is not really redable
+# 2.
 # Print a concise summary of a DataFrame.
 print(df.info())
+# in that we see that our data has no null values
+# 3.
 # Generate descriptive statistics.
 print(df.describe())
 
 print(f"Number of columns: {df.shape[1]}")
 print(f"Number of rows: {df.shape[0]}")
-
-print(type(df))
 
 #######################################################
 #                      CLEAN DATA                     #
@@ -38,8 +47,9 @@ print(type(df))
 
 # remove duplicate rows
 print(f"Sum of duplicates {df.duplicated().sum()}")
+# since we have 0 duplicates there is nothing to remove
 
-# drop the id column
+# drop the id column => it is not needed
 df = df.drop('id', 1)
 
 # we have no null values
@@ -53,8 +63,14 @@ df = df.drop('id', 1)
 df['age'] = round(df['age'] / 365.25)
 df = df.astype({'age': int})
 
+# lets check if weight has only whole numbers or not , then we can convert it
+for index, row in df.iterrows():
+    if not row['weight'].is_integer():
+        convert = 0
+
 # convert weight table to int => no floats needed
-df = df.astype({'weight': int})
+if convert == 1:
+    df = df.astype({'weight': int})
 
 # check for outliers
 
@@ -65,30 +81,37 @@ print(df.describe())
 
 # get correlations of the columns
 print(f"Correlation of the columns and cardio\n{df.corr()['cardio'].sort_values(ascending=False)}")
-# we see age and cholesterol have the biggest correlation with the cardio column
+# we see that age, cholesterol and weight are the top 3 columns in sense of correlating with the cardio column
 
 #######################################################
 #                   VISUALIZE DATA                    #
 #######################################################
 
 # boxplot for age and cardiovascular disease
+# boxplot for weight and cardiovascular disease
 fig, ax = plt.subplots(ncols=2, figsize=(20, 10))
 plt.tight_layout(pad=18)
 sb.boxplot(data=df, x='cardio', y='age', ax=ax[0])
-sb.boxplot(data=df, x='cardio', y='cholesterol', ax=ax[1])
+sb.boxplot(data=df, x='cardio', y='weight', ax=ax[1])
 ax[0].title.set_text('Age')
 ax[0].set_xticklabels(['No-cardio', 'Cardio'])
 ax[0].set_xlabel("")
-ax[1].title.set_text('Cholesterol')
+ax[1].title.set_text('Weight')
 ax[1].set_xticklabels(['No-cardio', 'Cardio'])
 ax[1].set_xlabel("")
 plt.show()
 plt.clf()
 
 # pie charts
+# the pie charts are made for a general overview ==> why did we choose those?
 custom_lines = [Line2D([0], [0], color=colors[0], lw=4),
                 Line2D([0], [0], color=colors[1], lw=4)]
 
+# chose to plot gender to check on the data
+# Cardiovascular disease develops 7 to 10 years later in women than in men and is still the major cause of death in
+# women over the age of 65 years.
+# Men generally develop CVD at a younger age and have a higher propensity of developing coronary heart disease (CHD)
+# than women. Women, in contrast, are at a higher risk of stroke, which often occurs at older age.
 data = df["gender"].value_counts()
 ax = data.plot(kind="pie", autopct='%1.1f%%', shadow=True, explode=[0.05, 0.05], colors=colors, legend=True,
                title='Cardiovascular patients gender percentage', ylabel='', labeldistance=None)
@@ -96,6 +119,7 @@ ax.legend(custom_lines, ['Female', 'Male'], bbox_to_anchor=(1, 1.02), loc='upper
 plt.show()
 plt.clf()
 
+# chose to plot cardio to check on the data
 data = df["cardio"].value_counts()
 ax = data.plot(kind="pie", autopct='%1.1f%%', shadow=True, explode=[0.05, 0.05], colors=colors, legend=True,
                title='Cardiovascular patients percentage', ylabel='', labeldistance=None)
@@ -140,7 +164,8 @@ df.insert(5, 'bmi', round((df['weight'] / (df['height'] / 100) ** 2), 2))
 df = df.drop(columns=['height', 'weight'])
 
 
-# remove rows with bmi outliers
+# Men generally develop CVD at a younger age and have a higher propensity of developing coronary heart disease (CHD)
+# than women. ==> do not remove gender
 
 # blood pressure => calculate out of ap_hi and ap_lo and then drop those tables
 # normal ... -1
@@ -170,11 +195,27 @@ df = df.drop(columns=['ap_hi', 'ap_lo'])
 print("\nAfter Data Preprocessing: ")
 print(df.head())
 print(df.describe())
-print(f"Correlation of the columns and cardio after data preprocessing\n{df.corr()['cardio'].sort_values(ascending=False)}")
+print(
+    f"Correlation of the columns and cardio after data preprocessing\n{df.corr()['cardio'].sort_values(ascending=False)}")
 
 # does correlation change ?
 # yes we know can see that bp correlates much more to cardio than age (age was on the first place first)
 
 #######################################################
 #                   MODEL BUILDING                    #
+#######################################################
+# in our case we need classification models:
+# 1. KNN classification
+# 2. Classification trees
+
+#######################################################
+#                 KNN CLASSIFICATION                  #
+#######################################################
+# We have to ...
+# 1. Split the Data in test, train and validation = > Monte Carlo Cross-Validation
+# 2. Hyper Parameter Tuning
+# 3. Compare the prediction and get a performance evaluation of the model
+
+#######################################################
+#                CLASSIFICATION TREES                 #
 #######################################################
