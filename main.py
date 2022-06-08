@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import seaborn as sb
 from matplotlib.lines import Line2D
 
-colors = ['#99ff99','#ffcc99']
+colors = ['#99ff99', '#ffcc99']
 
 #######################################################
 #                      IMPORT DATA                    #
@@ -58,7 +58,7 @@ df = df.astype({'weight': int})
 
 # check for outliers
 
-print("After Data Cleaning:   ")
+print("\nAfter Data Cleaning:   ")
 print(df.head())
 print(df.info())
 print(df.describe())
@@ -85,19 +85,20 @@ ax[1].set_xlabel("")
 plt.show()
 plt.clf()
 
-
 # pie charts
 custom_lines = [Line2D([0], [0], color=colors[0], lw=4),
                 Line2D([0], [0], color=colors[1], lw=4)]
 
 data = df["gender"].value_counts()
-ax = data.plot(kind="pie", autopct='%1.1f%%', shadow=True, explode=[0.05, 0.05], colors=colors, legend=True, title='Cardiovascular patients gender percentage', ylabel='', labeldistance=None)
+ax = data.plot(kind="pie", autopct='%1.1f%%', shadow=True, explode=[0.05, 0.05], colors=colors, legend=True,
+               title='Cardiovascular patients gender percentage', ylabel='', labeldistance=None)
 ax.legend(custom_lines, ['Female', 'Male'], bbox_to_anchor=(1, 1.02), loc='upper left')
 plt.show()
 plt.clf()
 
 data = df["cardio"].value_counts()
-ax = data.plot(kind="pie", autopct='%1.1f%%', shadow=True, explode=[0.05, 0.05], colors=colors, legend=True, title='Cardiovascular patients percentage', ylabel='', labeldistance=None)
+ax = data.plot(kind="pie", autopct='%1.1f%%', shadow=True, explode=[0.05, 0.05], colors=colors, legend=True,
+               title='Cardiovascular patients percentage', ylabel='', labeldistance=None)
 ax.legend(custom_lines, ['Not identified', 'Identified'], bbox_to_anchor=(1, 1.02), loc='upper left')
 plt.tight_layout()
 plt.show()
@@ -123,7 +124,56 @@ plt.clf()
 #                 DATA PREPROCESSING                  #
 #######################################################
 
+# Encoding categorical data => already done
+# no data transformation needed
 
+# feature selection / dimensionality reduction
+
+# manual
+# remove features that do not correlate with cardiovascular disease
+# The most important behavioural risk factors of heart disease and stroke are unhealthy diet, physical inactivity,
+# tobacco use and harmful use of alcohol. The effects of behavioural risk factors may show up in individuals as raised
+# blood pressure, raised blood glucose, raised blood lipids, and overweight and obesity.
+
+# overweight/obesity => drop tables weight and height and create a bmi column
+df.insert(5, 'bmi', round((df['weight'] / (df['height'] / 100) ** 2), 2))
+df = df.drop(columns=['height', 'weight'])
+
+
+# remove rows with bmi outliers
+
+# blood pressure => calculate out of ap_hi and ap_lo and then drop those tables
+# normal ... -1
+# elevated ... 0
+# high 1 ... 1
+# high 2 ... 2
+# high 3 ... 3
+
+def blood_pressure(x, y):
+    if x <= 120 and y <= 80:
+        return -1
+    elif x <= 129 and y <= 80:
+        return 0
+    elif x <= 139 or y <= 89:
+        return 1
+    elif x <= 180 or y <= 120:
+        return 2
+    elif x > 180 or y > 120:
+        return 3
+    else:
+        return None
+
+
+df.insert(8, "bp", df.apply(lambda row: blood_pressure(row['ap_hi'], row['ap_lo']), axis=1))
+df = df.drop(columns=['ap_hi', 'ap_lo'])
+
+print("\nAfter Data Preprocessing: ")
+print(df.head())
+print(df.describe())
+print(f"Correlation of the columns and cardio after data preprocessing\n{df.corr()['cardio'].sort_values(ascending=False)}")
+
+# does correlation change ?
+# yes we know can see that bp correlates much more to cardio than age (age was on the first place first)
 
 #######################################################
 #                   MODEL BUILDING                    #
