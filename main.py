@@ -7,6 +7,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sb
 from matplotlib.lines import Line2D
+from sklearn import metrics
+from sklearn.metrics import accuracy_score, roc_curve, roc_auc_score
+from sklearn.model_selection import cross_val_score, train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+import xgboost as xgb
 
 colors = ['#99ff99', '#ffcc99']
 convert = 1
@@ -265,7 +270,108 @@ plt.clf()
 # 2. Hyper Parameter Tuning (hyper Parameter k)
 # 3. Compare the prediction and get a performance evaluation of the model
 
+X = df.iloc[: , :-1].to_numpy()
+y = df['cardio'].to_numpy()
 
+# k_range = range(80, 100)
+# k_scores = []
+
+# for k in k_range:
+#    knn = KNeighborsClassifier(n_neighbors=k)
+#    scores = cross_val_score(knn, X, y, cv=5, scoring='accuracy')
+#    k_scores.append(scores.mean())
+
+# plt.plot(k_range, k_scores)
+# plt.xlabel('Value of K for KNN')
+# plt.ylabel('Cross-Validation Accuracy')
+# plt.show()
+
+# now we can see which k would be the best
+# we tried various spaces
+# the best space was between 80-100 range for k in case of accuracy and speed
+# print(np.argmax(k_scores))
+# print(k_range[np.argmax(k_scores)])
+
+# now lets actually train ad use the model and get all the data to it
+k = 81
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
+knn = KNeighborsClassifier(n_neighbors=k)
+knn.fit(X_train, y_train)
+y_pred = knn.predict(X_test)
+print('accuracy: ', knn.score(X_test, y_test))
+
+false_positive_rate1, true_positive_rate1, threshold1 = roc_curve(y_test, y_pred)
+
+print('roc_auc_score for KNN: ', roc_auc_score(y_test, y_pred))
+
+plt.subplots(1, figsize=(10, 10))
+plt.title('ROC - KNN')
+plt.plot(false_positive_rate1, true_positive_rate1)
+plt.plot([0, 1], ls="--")
+plt.plot([0, 0], [1, 0], c=".7"), plt.plot([1, 1], c=".7")
+plt.ylabel('True Positive Rate')
+plt.xlabel('False Positive Rate')
+plt.show()
+plt.clf()
+
+#######################################################
+#                        XGBOOST                      #
+#######################################################
+
+xgb_train_data = xgb.DMatrix(X_train, label=y_train)
+xgb_test_data = xgb.DMatrix(X_test, label=y_test)
+
+xgb_params = {
+    "objective": "binary:hinge",
+    'eval_metric': "mae"
+}
+evals = [(xgb_train_data, 'train'), (xgb_test_data, 'test')]
+
+gbm = xgb.train(
+    xgb_params,
+    xgb_train_data,
+    num_boost_round=100,
+    early_stopping_rounds=10,
+    evals=evals,
+)
+
+y_pred_xgb = gbm.predict(xgb_test_data)
+acc = accuracy_score(y_test, y_pred_xgb)
+print("Accuracy : ", acc)
+
+_, ax = plt.subplots(figsize=(12, 4))
+xgb.plot_importance(gbm,
+                    ax=ax,
+                    importance_type='gain',
+                    show_values=False)
+plt.show()
+plt.clf()
+
+# Explanation:
+# f0 ... age
+# f1 ... gender
+# f2 ... bmi
+# f3 ... cholesterol
+# f4 ... glucose
+# f5 ... smoke
+# f6 ..- blood pressure ==> as said before and seen in graph : biggest impact
+# f7 ... alcohol
+# f8 ... active
+
+false_positive_rate_xgb, true_positive_rate_xgb, threshold1 = roc_curve(y_test, y_pred_xgb)
+
+print('roc_auc_score for XGB: ', roc_auc_score(y_test, y_pred_xgb))
+
+plt.subplots(1, figsize=(10, 10))
+plt.title('ROC - XGB')
+plt.plot(false_positive_rate_xgb, true_positive_rate_xgb)
+plt.plot([0, 1], ls="--")
+plt.plot([0, 0], [1, 0], c=".7"), plt.plot([1, 1], c=".7")
+plt.ylabel('True Positive Rate')
+plt.xlabel('False Positive Rate')
+plt.show()
+plt.clf()
 
 #######################################################
 #                CLASSIFICATION TREES                 #
