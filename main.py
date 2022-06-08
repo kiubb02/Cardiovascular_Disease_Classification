@@ -7,9 +7,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sb
 from matplotlib.lines import Line2D
-from sklearn import metrics
 from sklearn.metrics import accuracy_score, roc_curve, roc_auc_score
-from sklearn.model_selection import cross_val_score, train_test_split
+from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 import xgboost as xgb
 
@@ -211,7 +210,7 @@ print(
 #######################################################
 
 # we visualize the data further after we have processed it further
-fig, ax = plt.subplots(ncols=3, nrows=2, figsize=(20,13), sharey=True)
+fig, ax = plt.subplots(ncols=3, nrows=2, figsize=(20, 13))
 plt.tight_layout(pad=3)
 
 # first row all with tight relationship with cardio
@@ -233,7 +232,6 @@ df_alco = df.groupby('alco').mean()
 sb.barplot(data=df_alco, x=df_alco.index, y='cardio', ax=ax[1][1])
 df_smoke = df.groupby('smoke').mean()
 sb.barplot(data=df_smoke, x=df_smoke.index, y='cardio', ax=ax[1][2])
-
 
 plt.setp(ax[:, :], ylabel='')
 plt.setp(ax[:, 0], ylabel='Cardio Percentage')
@@ -271,7 +269,7 @@ plt.clf()
 # 3. Compare the prediction and get a performance evaluation of the model
 
 # get features and target
-X = df.iloc[: , :-1].to_numpy()
+X = df.iloc[:, :-1].to_numpy()
 y = df['cardio'].to_numpy()
 
 # ------------------------------------------------------------------------------- #
@@ -364,7 +362,7 @@ plt.clf()
 # f7 ... alcohol
 # f8 ... active
 
-false_positive_rate_xgb, true_positive_rate_xgb, threshold1 = roc_curve(y_test, y_pred_xgb)
+false_positive_rate_xgb, true_positive_rate_xgb, threshold2 = roc_curve(y_test, y_pred_xgb)
 
 print('roc_auc_score for XGB: ', roc_auc_score(y_test, y_pred_xgb))
 
@@ -379,10 +377,9 @@ plt.show()
 plt.clf()
 
 # ------------------------------------------------------------------------------- #
-#                              HYPER PARAMETER TUNING                             #
+#                                     CONCLUSION                                  #
 #                                (after knn and xgb)                              #
 # ------------------------------------------------------------------------------- #
-
 
 
 #######################################################
