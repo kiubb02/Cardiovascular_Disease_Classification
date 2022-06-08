@@ -2,7 +2,7 @@
 #######################################################
 #                         IMPORTS                     #
 #######################################################
-
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sb
@@ -202,6 +202,55 @@ print(
 # yes we know can see that bp correlates much more to cardio than age (age was on the first place first)
 
 #######################################################
+#                   VISUALIZE DATA                    #
+#######################################################
+
+# we visualize the data further after we have processed it further
+fig, ax = plt.subplots(ncols=3, nrows=2, figsize=(20,13), sharey=True)
+plt.tight_layout(pad=3)
+
+# first row all with tight relationship with cardio
+df_bp = df.groupby('bp').mean()
+sb.barplot(data=df_bp, x=df_bp.index, y='cardio', ax=ax[0][0])
+df_cholesterol = df.groupby('cholesterol').mean()
+sb.barplot(data=df_cholesterol, x=df_cholesterol.index, y='cardio', ax=ax[0][1])
+ax[0][1].set_xticklabels(['normal', 'above normal', 'well above normal'])
+df_gluc = df.groupby('gluc').mean()
+sb.barplot(data=df_gluc, x=df_gluc.index, y='cardio', ax=ax[0][2])
+ax[0][2].set_xticklabels(['normal', 'above normal', 'well above normal'])
+ax[0][2].set_yticks(np.arange(0, 1.2, 0.1))
+ax[0][2].set_yticklabels(np.arange(0, 120, 10))
+
+# second row all with loose relationship with cardio
+df_active = df.groupby('active').mean()
+sb.barplot(data=df_active, x=df_active.index, y='cardio', ax=ax[1][0])
+df_alco = df.groupby('alco').mean()
+sb.barplot(data=df_alco, x=df_alco.index, y='cardio', ax=ax[1][1])
+df_smoke = df.groupby('smoke').mean()
+sb.barplot(data=df_smoke, x=df_smoke.index, y='cardio', ax=ax[1][2])
+
+
+plt.setp(ax[:, :], ylabel='')
+plt.setp(ax[:, 0], ylabel='Cardio Percentage')
+plt.show()
+plt.clf()
+
+#######################################################
+#                     CONCLUSION                      #
+#######################################################
+
+# Before we go to build a model lets sum up what we have learned from our data exploration
+# 1. The correlation between smoking and the possibility of having a cardio vascular disease is low
+# 2. The correlation between alcohol intake and the possibility of having a cardio vascular disease is low
+# 3. The correlation between sports/activity and the possibility of having a cardio vascular disease is low
+# 4. The relationship between the bmi and cardiovascular is really strong , thus the higher the bmi the more possible
+# the probability of having a cardiovascular disease
+# 5. Other major relationships to cardiovascular disease have the following features: cholesterol level, blood pressure
+# and glucose level
+# 6. All major relationships are proportional ( the higher x , the more likely y) => can be seen in the visualization
+
+
+#######################################################
 #                   MODEL BUILDING                    #
 #######################################################
 # in our case we need classification models:
@@ -212,9 +261,11 @@ print(
 #                 KNN CLASSIFICATION                  #
 #######################################################
 # We have to ...
-# 1. Split the Data in test, train and validation = > Monte Carlo Cross-Validation
-# 2. Hyper Parameter Tuning
+# 1. Split the Data in test, train and validation = > Monte Carlo Cross-Validation or K-Fold Cross Validation
+# 2. Hyper Parameter Tuning (hyper Parameter k)
 # 3. Compare the prediction and get a performance evaluation of the model
+
+
 
 #######################################################
 #                CLASSIFICATION TREES                 #
