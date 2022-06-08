@@ -270,9 +270,13 @@ plt.clf()
 # 2. Hyper Parameter Tuning (hyper Parameter k)
 # 3. Compare the prediction and get a performance evaluation of the model
 
+# get features and target
 X = df.iloc[: , :-1].to_numpy()
 y = df['cardio'].to_numpy()
 
+# ------------------------------------------------------------------------------- #
+#                              HYPER PARAMETER TUNING                             #
+# ------------------------------------------------------------------------------- #
 # k_range = range(80, 100)
 # k_scores = []
 
@@ -291,6 +295,7 @@ y = df['cardio'].to_numpy()
 # the best space was between 80-100 range for k in case of accuracy and speed
 # print(np.argmax(k_scores))
 # print(k_range[np.argmax(k_scores)])
+# ------------------------------------------------------------------------------- #
 
 # now lets actually train ad use the model and get all the data to it
 k = 81
@@ -372,6 +377,13 @@ plt.ylabel('True Positive Rate')
 plt.xlabel('False Positive Rate')
 plt.show()
 plt.clf()
+
+# ------------------------------------------------------------------------------- #
+#                              HYPER PARAMETER TUNING                             #
+#                                (after knn and xgb)                              #
+# ------------------------------------------------------------------------------- #
+
+
 
 #######################################################
 #                CLASSIFICATION TREES                 #
