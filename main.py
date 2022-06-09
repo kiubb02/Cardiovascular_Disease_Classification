@@ -132,6 +132,30 @@ plt.tight_layout()
 plt.show()
 plt.clf()
 
+data = df["smoke"].value_counts()
+ax = data.plot(kind="pie", autopct='%1.1f%%', shadow=True, explode=[0.05, 0.05], colors=colors, legend=True,
+               title='Smokers percentage', ylabel='', labeldistance=None)
+ax.legend(custom_lines, ['None smokers', 'Smokers'], bbox_to_anchor=(1, 1.02), loc='upper left')
+plt.tight_layout()
+plt.show()
+plt.clf()
+
+data = df["alco"].value_counts()
+ax = data.plot(kind="pie", autopct='%1.1f%%', shadow=True, explode=[0.05, 0.05], colors=colors, legend=True,
+               title='Drinkers percentage', ylabel='', labeldistance=None)
+ax.legend(custom_lines, ['None drinkers', 'Drinkers'], bbox_to_anchor=(1, 1.02), loc='upper left')
+plt.tight_layout()
+plt.show()
+plt.clf()
+
+data = df["active"].value_counts()
+ax = data.plot(kind="pie", autopct='%1.1f%%', shadow=True, explode=[0.05, 0.05], colors=colors, legend=True,
+               title='Activity percentage', ylabel='', labeldistance=None)
+ax.legend(custom_lines, ['Active', 'Not active'], bbox_to_anchor=(1, 1.02), loc='upper left')
+plt.tight_layout()
+plt.show()
+plt.clf()
+
 # density plots
 df['age'].plot.density(color=colors[0])
 plt.title('Density plot for Age')
