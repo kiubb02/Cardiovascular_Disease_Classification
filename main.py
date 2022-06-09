@@ -10,6 +10,8 @@ from matplotlib.lines import Line2D
 from sklearn.metrics import accuracy_score, roc_curve, roc_auc_score
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import GridSearchCV
 import xgboost as xgb
 
 colors = ['#99ff99', '#ffcc99']
@@ -223,8 +225,7 @@ df = df.drop(columns=['ap_hi', 'ap_lo'])
 print("\nAfter Data Preprocessing: ")
 print(df.head())
 print(df.describe())
-print(
-    f"Correlation of the columns and cardio after data preprocessing\n{df.corr()['cardio'].sort_values(ascending=False)}")
+print(f"Correlation of the columns and cardio after data preprocessing\n{df.corr()['cardio'].sort_values(ascending=False)}")
 
 # does correlation change ?
 # yes we know can see that bp correlates much more to cardio than age (age was on the first place first)
@@ -409,3 +410,89 @@ plt.clf()
 #######################################################
 #                CLASSIFICATION TREES                 #
 #######################################################
+
+# ------------------------------------------------------------------------------- #
+#                              HYPER PARAMETER TUNING                             #
+# ------------------------------------------------------------------------------- #
+#
+X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
+# train_accuracies = []
+# test_accuracies = []
+# depth_range = range(1, 15)
+# for max_depth in depth_range:
+#     decision_tree = DecisionTreeClassifier(max_depth=max_depth, random_state=0)
+#     decision_tree.fit(X_train, y_train)
+#     train_accuracies.append(decision_tree.score(X_train, y_train))
+#     test_accuracies.append(decision_tree.score(X_test, y_test))
+#
+# plt.title('Training VS Test accuracy - max_depth')
+# plt.plot(depth_range, train_accuracies, label='training accuracy')
+# plt.plot(depth_range, test_accuracies, label='test accuracy')
+# plt.ylabel('accuracy')
+# plt.xlabel('max_depth')
+# plt.legend()
+# plt.show()
+# plt.clf()
+#
+#
+# train_accuracies.clear()
+# test_accuracies.clear()
+# max_leaf_node_range = range(2, 80)
+# for max_leaf_node in max_leaf_node_range:
+#     decision_tree = DecisionTreeClassifier(max_depth=7, max_leaf_nodes=max_leaf_node, random_state=0)
+#     decision_tree.fit(X_train, y_train)
+#     train_accuracies.append(decision_tree.score(X_train, y_train))
+#     test_accuracies.append(decision_tree.score(X_test, y_test))
+#
+# plt.title('Training VS Test accuracy - max_leaf_nodes')
+# plt.plot(max_leaf_node_range, train_accuracies, label='training accuracy')
+# plt.plot(max_leaf_node_range, test_accuracies, label='test accuracy')
+# plt.ylabel('accuracy')
+# plt.xlabel('max_leaf_nodes')
+# plt.legend()
+# plt.show()
+# plt.clf()
+#
+# dt = DecisionTreeClassifier(random_state=0)
+# params = {
+#     'max_depth': range(3, 8),
+#     'max_leaf_nodes': range(31, 57),
+#     'criterion': ['gini', 'entropy']
+# }
+# grid_search = GridSearchCV(estimator=dt,
+#                            param_grid=params,
+#                            cv=5, n_jobs=-1, verbose=1, scoring='accuracy')
+#
+# grid_search.fit(X_train, y_train)
+# score_df = pd.DataFrame(grid_search.cv_results_)
+# print(score_df.head())
+# print(score_df.nlargest(3, 'mean_test_score'))
+# print(score_df.nlargest(1, 'mean_test_score'))
+# print(grid_search.best_estimator_)
+
+decision_tree = DecisionTreeClassifier(max_depth=7, max_leaf_nodes=39, random_state=0)
+
+decision_tree = decision_tree.fit(X_train, y_train)
+y_pred_tree = decision_tree.predict(X_test)
+
+decision_tree_train = decision_tree.fit(X_train, y_train)
+y_pred_tree_train = decision_tree.predict(X_train)
+
+acc = accuracy_score(y_test, y_pred_tree)
+acc_train = accuracy_score(y_train, y_pred_tree_train)
+print("Accuracy on training data: ", acc_train)
+print("Accuracy on testing data: ", acc)
+
+false_positive_rate_tree, true_positive_rate_tree, threshold3 = roc_curve(y_test, y_pred_tree)
+print('roc_auc_score for Decision Tree: ', roc_auc_score(y_test, y_pred_tree))
+
+plt.subplots(1, figsize=(10, 10))
+plt.title('ROC - Decision Tree')
+plt.plot(false_positive_rate_tree, true_positive_rate_tree)
+plt.plot([0, 1], ls="--")
+plt.plot([0, 0], [1, 0], c=".7"), plt.plot([1, 1], c=".7")
+plt.ylabel('True Positive Rate')
+plt.xlabel('False Positive Rate')
+plt.show()
+plt.clf()
+
