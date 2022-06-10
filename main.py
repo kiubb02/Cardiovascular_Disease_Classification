@@ -12,6 +12,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import GridSearchCV
+from sklearn import tree
 import xgboost as xgb
 
 colors = ['#99ff99', '#ffcc99']
@@ -406,6 +407,9 @@ plt.clf()
 #                                (after knn and xgb)                              #
 # ------------------------------------------------------------------------------- #
 
+# we cannot go over the accuracy of 72% => why is that ?
+# a possibility might be the inclusion of outliers, which in our opinion are important to the case
+# removing outliers still brough the same result (or a 73% result)
 
 #######################################################
 #                CLASSIFICATION TREES                 #
@@ -474,6 +478,15 @@ decision_tree = DecisionTreeClassifier(max_depth=7, max_leaf_nodes=39, random_st
 
 decision_tree = decision_tree.fit(X_train, y_train)
 y_pred_tree = decision_tree.predict(X_test)
+
+text_representation = tree.export_text(decision_tree)
+print(text_representation)
+
+fig = plt.figure(figsize=(25,20))
+_ = tree.plot_tree(decision_tree,
+                   filled=True)
+plt.show()
+plt.clf()
 
 decision_tree_train = decision_tree.fit(X_train, y_train)
 y_pred_tree_train = decision_tree.predict(X_train)
